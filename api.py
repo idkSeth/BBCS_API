@@ -45,7 +45,7 @@ def teachers():
     db.close()
     data2 = []
     for row in data:
-        daat2.append({"teacherId":row[0], "name":row[1]})
+        data2.append({"teacherId":row[0], "name":row[1]})
     return flask.make_response(jsonify(data2),200)
 
 @app.route("/teacher_photo",methods=["GET"])
