@@ -2,6 +2,8 @@ import flask
 import sqlite3
 from waitress import serve
 from flask import jsonify
+import datetime, time
+import pandas as pd
 
 app = flask.Flask(__name__)
 
@@ -139,25 +141,25 @@ def books():
 def venues():
     db = sqlite3.connect("facilities.db")
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM venues").fetchall()
+    data = cursor.execute("SELECT * FROM venues").fetchall()
     db.close()
-    venues = []
-    for row in cursor:
+    data2 = []
+    for row in data:
         venueId, name, capacity, underMaintenance = row[0], row[1], row[2], row[3]
-        venues.append({"venueId":venueId, "name":name, "capacity":capacity, "underMaintenance":underMaintenance})
-    return flask.make_response(jsonify(venues),200)
+        data2.append({"venueId":venueId, "name":name, "capacity":capacity, "underMaintenance":underMaintenance})
+    return flask.make_response(jsonify(data2),200)
     
 @app.route('/bookings')
 def bookings():
     db = sqlite3.connect("facilities.db")
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM BOOKINGS").fetchall()
+    data = cursor.execute("SELECT * FROM BOOKINGS").fetchall()
     db.close()
-    bookings = []
-    for row in cursor:
+    data2 = []
+    for row in data:
         bookingId, bookerId, venueId, dateBooked, startHour, startMinute, endHour, endMinute = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
-        bookings.append({"bookingId":bookingId, "bookerId":bookerId, "venueId":venueId, "dateBooked":dateBooked, "startHour":startHour, "startMinute":startMinute, "endHour":endHour, "endMinute":endMinute})
-    return flask.make_response(jsonify(bookings),200)
+        data2.append({"bookingId":bookingId, "bookerId":bookerId, "venueId":venueId, "dateBooked":dateBooked, "startHour":startHour, "startMinute":startMinute, "endHour":endHour, "endMinute":endMinute})
+    return flask.make_response(jsonify(data2),200)
 
 @app.route('/items')
 def items():
@@ -206,6 +208,69 @@ def lib_books():
         data2.append({"bookId":row[0], "bookTitle":row[1], "bookAuthor":row[2], "category":row[3], "ISBN":row[4], "borrowed":row[5], "borrowerId":row[6], "borrowedOn":row[7], "dueOn":row[8]})
     return flask.make_response(jsonify(data2), 200)
     
+@app.route("/borrow", methods=["POST"])
+def borrow():
+    try:
+        bookId = int(flask.request.headers['bookId'])
+    except KeyError:
+        return flask.make_response("bookId not passed in request header",400)
+        
+    try:
+        borrowerId = int(flask.request.headers['borrowerId'])
+    except KeyError:
+        return flask.make_response("borrowerId not passed in request header",400)
+    
+    db = sqlite3.connect("people.db")
+    c = db.cursor()
+    c.execute('''SELECT * FROM students WHERE studentId = (?)''', (borrowerId,))
+    student = c.fetchone()
+    
+    if student == None:
+        return flask.make_response("Student does not exist", 400)
+    
+    db.close()
+    
+    db = sqlite3.connect('library.db')
+    c = db.cursor()
+    c.execute('''SELECT * FROM books WHERE bookId = (?)''', (bookId,))
+    book = c.fetchone()
+
+    if book != None:
+        if book[5] == 1:
+            db.close()
+            return flask.make_response("Book is already borrowed", 400)
+        else: 
+            c.execute(f'''UPDATE books SET borrowed = 1, borrowerId = {borrowerId} , borrowedOn = "{pd.Timestamp(datetime.datetime.now().strftime('%d/%m/%Y')).to_pydatetime()}" , dueOn = "{pd.Timestamp((datetime.datetime.now()+datetime.timedelta(days=14)).strftime('%d/%m/%Y')).to_pydatetime()}" WHERE bookId = {bookId}''')
+            db.commit()
+            db.close()
+            return flask.make_response("Success!", 200)
+    else:
+        return flask.make_response("Book does not exist", 400)
+
+@app.route("/return", methods=['POST'])
+def return_book():
+    db = sqlite3.connect('library.db')
+    c = db.cursor()
+    try:
+        bookId = int(flask.request.headers['bookId'])
+        c.execute('''SELECT * FROM books WHERE bookId = (?)''', (bookId,))
+        book = c.fetchone()
+        if book != None:
+            if book[5] == 0:
+                db.close()
+                return flask.make_response("Book is not borrowed", 400)
+            else:
+                c.execute('''UPDATE books SET borrowed = 0, borrowerId = 0, borrowedOn = NULL, dueOn = NULL WHERE bookId = (?)''', (bookId,))
+                db.commit()
+                db.close()
+                return flask.make_response("Success!", 200)
+        else:
+            return flask.make_response("Book does not exist", 400)
+        
+    except KeyError:
+        db.close()
+        return flask.make_response("bookId not passed in request header",400)
+        
 
 if __name__ == "__main__":
     serve(app, host='0.0.0.0', port=55555)
