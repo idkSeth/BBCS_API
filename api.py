@@ -110,24 +110,28 @@ def timetables():
 def lostandfound():
     db = sqlite3.connect("lostAndFound.db")
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM lostitems").fetchall()
+    data = cursor.execute("SELECT itemId, name, description, lastSeen, datePosted, found, creatorID FROM items").fetchall()
     db.close()
-    items = []
-    for row in cursor:
-        itemId, name, description, image, lastSeen, datePosted, found, creatorID = row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7]
-        items.append({"itemId":itemId,"name":name, "description":description,"image":image,"lastSeen":lastSeen,"datePosted":datePosted,"found":found,"creatorID":creatorID})
-    return flask.make_response(jsonify(items),200)
+    data2 = []
+    for row in data:
+        itemId, name, description, lastSeen, datePosted, found, creatorID = row[0],row[1],row[2],row[3],row[4],row[5],row[6]
+        data2.append({"itemId":itemId,"name":name, "description":description,"lastSeen":lastSeen,"datePosted":datePosted,"found":found,"creatorID":creatorID})
+    return flask.make_response(jsonify(data2),200)
+
+@app.route('/lostandfound_image')
+def lostandfound_image():
+    pass
     
 @app.route('/books')
 def books():
     db = sqlite3.connect("classes.db")
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM LESSONS").fetchall()
+    data = cursor.execute("SELECT * FROM LESSONS").fetchall()
     db.close()
-    books = []
-    for row in cursor:
+    data2 = []
+    for row in data:
         bookId, bookTitle, bookAuthor, category, isbn, borrowed, borrowerId, borrowedOn, dueOn = row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8]
-        books.append({"bookId":bookId, "bookTitle":bookTitle,"bookAuthor":bookAuthor, "category":category, "isbn":isbn, "borrowed":borrowed, "borrowerId":borrowerId, "borrowedOn":borrowedOn, "dueOn":dueOn})
+        data2.append({"bookId":bookId, "bookTitle":bookTitle,"bookAuthor":bookAuthor, "category":category, "isbn":isbn, "borrowed":borrowed, "borrowerId":borrowerId, "borrowedOn":borrowedOn, "dueOn":dueOn})
     
     return flask.make_response(jsonify(books),200)
     
@@ -191,6 +195,17 @@ def todos():
         todos.append({"todoId":todoId, "title":title, "userId":userId, "category":category, "dueDate":dueDate, "isDone":isDone})
     return flask.make_response(jsonify(todos),200)
         
+@app.route("/library_books")
+def lib_books():
+    db = sqlite3.connect("library.db")
+    cursor = db.cursor()
+    data = cursor.execute("SELECT * FROM books").fetchall()
+    db.close()
+    data2 = []
+    for row in data:
+        data2.append({"bookId":row[0], "bookTitle":row[1], "bookAuthor":row[2], "category":row[3], "ISBN":row[4], "borrowed":row[5], "borrowerId":row[6], "borrowedOn":row[7], "dueOn":row[8]})
+    return flask.make_response(jsonify(data2), 200)
+    
 
 if __name__ == "__main__":
     serve(app, host='0.0.0.0', port=55555)
