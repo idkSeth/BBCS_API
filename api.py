@@ -98,13 +98,13 @@ def timetables():
     #no data
     db = sqlite3.connect("classes.db")
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM TIMETABLES").fetchall()
+    data = cursor.execute("SELECT * FROM TIMETABLES").fetchall()
     db.close()
-    timetable = []
-    for row in cursor:
+    data2 = []
+    for row in data:
         lessonId, classId, dayOfWeek, startHour, startMinute, endHour, endMinute = row[0], row[1], row[2], row[3], row[4], row[5], row[6]
-        timetable.append({"lessonId":lessonId, "classId":classId, "dayOfWeek":dayOfWeek, "startHour":startHour, "startMinute":startMinute, "endHour":endHour, "endMinute":endMinute})
-    return flask.make_response(jsonify(timetable),200)
+        data2.append({"lessonId":lessonId, "classId":classId, "dayOfWeek":dayOfWeek, "startHour":startHour, "startMinute":startMinute, "endHour":endHour, "endMinute":endMinute})
+    return flask.make_response(jsonify(data2),200)
     
     
 
