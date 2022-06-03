@@ -89,7 +89,7 @@ def lessons():
     data2 = []
     for row in data:
         lessonid, subjectid, classid, teacherid, grade, semester = row[0], row[1], row[2], row[3], row[4], row[5]
-        data2.append({"lessonid":lessonid, "classid":classid, "teacerid":teacherid, "grade":grade, "semester":semester})
+        data2.append({"lessonid":lessonid, "subjectid":subjectid, "classid":classid, "teacherid":teacherid, "grade":grade, "semester":semester})
     return flask.make_response(jsonify(data2),200)
 #table here
 
