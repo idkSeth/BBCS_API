@@ -63,7 +63,7 @@ def classes():
     data2 = []
     for row in data:
         classid, classname, grade, formteacherid = row[0], row[1], row[2], row[3]
-        data2.append({"classid":classid, "classname":classname, "grade":grade, "formteacherid":formteacherid})
+        data2.append({"classId":classid, "className":classname, "grade":grade, "formTeacherId":formteacherid})
     
     return flask.make_response(jsonify(data2),200)
     
@@ -76,7 +76,7 @@ def subjects():
     data2 = []
     for row in data:
         subjectid, name, subjectcode = row[0], row[1], row[2]
-        data2.append({"subjectid":subjectid, "name":name, "subjectcode":subjectcode})
+        data2.append({"subjectId":subjectid, "name":name, "subjectCode":subjectcode})
     
     return flask.make_response(jsonify(data2), 200)
 
@@ -89,7 +89,7 @@ def lessons():
     data2 = []
     for row in data:
         lessonid, subjectid, classid, teacherid, grade, semester = row[0], row[1], row[2], row[3], row[4], row[5]
-        data2.append({"lessonid":lessonid, "subjectid":subjectid, "classid":classid, "teacherid":teacherid, "grade":grade, "semester":semester})
+        data2.append({"lessonId":lessonid, "subjectId":subjectid, "classId":classid, "teacherId":teacherid, "grade":grade, "semester":semester})
     return flask.make_response(jsonify(data2),200)
 #table here
 
@@ -117,7 +117,7 @@ def lostandfound():
     data2 = []
     for row in data:
         itemId, name, description, lastSeen, datePosted, found, creatorID = row[0],row[1],row[2],row[3],row[4],row[5],row[6]
-        data2.append({"itemId":itemId,"name":name, "description":description,"lastSeen":lastSeen,"datePosted":datePosted,"found":found,"creatorID":creatorID})
+        data2.append({"itemId":itemId,"name":name, "description":description,"lastSeen":lastSeen,"datePosted":datePosted,"found":found,"creatorId":creatorID})
     return flask.make_response(jsonify(data2),200)
 
 @app.route('/lostandfound_image')
@@ -161,7 +161,7 @@ def bookings():
         data2.append({"bookingId":bookingId, "bookerId":bookerId, "venueId":venueId, "dateBooked":dateBooked, "startHour":startHour, "startMinute":startMinute, "endHour":endHour, "endMinute":endMinute})
     return flask.make_response(jsonify(data2),200)
 
-@app.route('/items')
+@app.route('/bookstore')
 def items():
     db = sqlite3.connect("bookstore.db")
     cursor = db.cursor()
@@ -205,7 +205,7 @@ def lib_books():
     db.close()
     data2 = []
     for row in data:
-        data2.append({"bookId":row[0], "bookTitle":row[1], "bookAuthor":row[2], "category":row[3], "ISBN":row[4], "borrowed":row[5], "borrowerId":row[6], "borrowedOn":row[7], "dueOn":row[8]})
+        data2.append({"bookId":row[0], "bookTitle":row[1], "bookAuthor":row[2], "category":row[3], "isbn":row[4], "borrowed":row[5], "borrowerId":row[6], "borrowedOn":row[7], "dueOn":row[8]})
     return flask.make_response(jsonify(data2), 200)
     
 @app.route("/borrow", methods=["POST"])
